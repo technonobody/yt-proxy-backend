@@ -3,27 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>YouTube Live Proxy Player and m3u8 Generator</title>
+  <title>YouTube Live Proxy Player and m3u8 Stream Link Generator</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.0/dist/hls.min.js"></script>
-
   <style>
     body {
       background: linear-gradient(145deg, #0c1c3d, #1a2a4f);
       color: #cfd8e3;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .brand { color: #008cff; font-weight: bold; font-size: 32px; }
-    .subtitle { color: #a0b3c5; font-size: 14px; }
+    .brand {
+      color: #008cff;
+      font-weight: bold;
+      font-size: 32px;
+    }
+    .subtitle {
+      color: #a0b3c5;
+      font-size: 14px;
+    }
     .header-logo {
       width: 60px;
       border-radius: 50%;
       border: 2px solid #00bcd4;
       box-shadow: 0 0 10px #00bcd4;
     }
-    .btn-play { background: #008cff; color: #fff; }
-    .btn-example { background: #008cff; color: #cfd8e3; }
+    .btn-play {
+      background: #008cff;
+      color: #fff;
+    }
+    .btn-play:hover {
+      background: #008cfc;
+    }
     .card {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(0,188,212,0.3);
@@ -36,161 +46,155 @@
       color: #fff;
       border: none;
     }
-    .input-group input:focus { background: white; }
-    .share-text { background: #008cff; color: #fff; font-size: 14px; }
+    .input-group input:focus {
+      background: white;
+      color: black;
+    }
+    .share-text {
+      background: #008cff;
+      color: #fff;
+      font-size: 14px;
+    }
     footer {
       margin-top: 40px;
       font-size: 13px;
       color: #7a8ca4;
     }
-    .social-icons a { margin: 0 8px; color: #81d4fa; }
-    .loading-spinner { display: none; }
+    .social-icons a {
+      margin: 0 8px;
+      color: #81d4fa;
+    }
+    .loading-spinner {
+      display: none;
+    }
     .analytics-badge {
       background: rgba(255,255,255,0.1);
       border-radius: 8px;
       padding: 5px 10px;
-      margin: 2px;
       font-size: 12px;
-    }
-    video {
-      border-radius: 12px;
-      width: 100%;
-      height: auto;
-      background-color: black;
     }
   </style>
 </head>
 
 <body>
-<div class="container py-4">
-  <div class="text-center mb-3">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWOGcbis8Xxgh_6H9uEAPJ0zZmIfjl-cT4t_u_lOlC8eYKlh3Rh9HPKTQ&s=10" class="header-logo mb-2">
-    <div class="brand">YouTube Live</div>
-    <p class="subtitle">Your personal YouTube live proxy player</p>
-  </div>
+  <div class="container py-4">
+    <div class="text-center mb-3">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWOGcbis8Xxgh_6H9uEAPJ0zZmIfjl-cT4t_u_lOlC8eYKlh3Rh9HPKTQ&s=10" class="header-logo mb-2">
+      <div class="brand">YouTube Live</div>
+      <p class="subtitle">Your personal YouTube live proxy player</p>
+    </div>
 
-  <div class="card p-3 mb-4">
-    <div class="row g-2">
-      <div class="col-md-7 col-12">
-        <input type="text" id="link" class="form-control" placeholder="Paste YouTube Live URL here">
-      </div>
-      <div class="col-md-3 col-6 d-grid">
-        <button onclick="playVideo()" class="btn btn-play">
-          <i class="fas fa-play"></i> Play
-        </button>
-      </div>
-      <div class="col-md-2 col-6 d-grid">
-        <button onclick="addExample()" class="btn btn-example">
-          Example
-        </button>
+    <div class="card p-3 mb-4">
+      <div class="row g-2">
+        <div class="col-md-8 col-12">
+          <input type="text" id="link" class="form-control" placeholder="Paste YouTube Live URL here">
+        </div>
+        <div class="col-md-2 col-6 d-grid">
+          <button onclick="playVideo()" class="btn btn-play">
+            <i class="fas fa-play"></i> Play
+          </button>
+        </div>
+        <div class="col-md-2 col-6 d-grid">
+          <button onclick="addExample()" class="btn btn-secondary">
+            Example
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <div class="text-center mb-3">
-    <span class="analytics-badge">Views: 478</span>
-  </div>
-
-  <div id="loading" class="text-center loading-spinner mb-3">
-    <div class="spinner-border text-info" role="status">
-      <span class="visually-hidden">Loading...</span>
-    </div>
-  </div>
-
-  <div id="playerBox" style="display:none;" class="card p-3 mb-3">
-    <div id="videoContainer" class="ratio ratio-16x9 mb-3"></div>
-
-    <div class="mb-3">
-      <label class="form-label">Stream Link (.m3u8):</label>
-      <div class="input-group">
-        <input type="text" id="streamLinkText" class="form-control share-text" readonly>
-        <button class="btn btn-outline-info" onclick="copyStream()">
-          <i class="fas fa-copy"></i>
-        </button>
+    <div id="loading" class="text-center loading-spinner mb-3">
+      <div class="spinner-border text-info" role="status">
+        <span class="visually-hidden">Loading...</span>
       </div>
     </div>
+
+    <div id="playerBox" style="display:none;">
+      <div class="card mb-3">
+        <div class="ratio ratio-16x9">
+          <iframe id="ytFrame" allow="autoplay" allowfullscreen style="border-radius:12px;"></iframe>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Player Link:</label>
+        <div class="input-group">
+          <input type="text" id="playerLinkText" class="form-control share-text" readonly>
+          <button class="btn btn-outline-info" onclick="copyToClipboard('playerLinkText')">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Embed Code:</label>
+        <div class="input-group">
+          <input type="text" id="embedLinkText" class="form-control share-text" readonly>
+          <button class="btn btn-outline-info" onclick="copyToClipboard('embedLinkText')">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Stream Link (.m3u8):</label>
+        <div class="input-group">
+          <input type="text" id="streamLinkText" class="form-control share-text" readonly>
+          <button class="btn btn-outline-info" onclick="copyToClipboard('streamLinkText')">
+            <i class="fas fa-copy"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="text-center mt-3">
+      <div>YT-live helps stream YouTube Live without buffering.</div>
+      <div class="social-icons my-1">
+        <a href="#"><i class="fab fa-facebook"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-github"></i></a>
+        <a href="#"><i class="fab fa-youtube"></i></a>
+      </div>
+      <div>Developed by Fighter and ChatGPT 🚀</div>
+    </footer>
   </div>
 
-  <div class="card p-3 mb-4">
-    <h6>How to use:</h6>
-    <ol class="small mb-0">
-      <li>Paste your YouTube live URL or click Example</li>
-      <li>Click Play → see smooth loading</li>
-      <li>Watch the stream below</li>
-      <li>Copy the raw stream link (.m3u8)</li>
-    </ol>
-  </div>
-</div>
-
-<footer class="text-center mt-3">
-  <div>YT-live helps stream YouTube Live without buffering.</div>
-  <div class="social-icons my-1">
-    <a href="#"><i class="fab fa-facebook"></i></a>
-    <a href="#"><i class="fab fa-twitter"></i></a>
-    <a href="#"><i class="fab fa-github"></i></a>
-    <a href="#"><i class="fab fa-youtube"></i></a>
-  </div>
-  <div>Developed by Fighter 💪</div>
-</footer>
-
-<script>
-function playVideo() {
-  const url = document.getElementById("link").value.trim();
-  const match = url.match(/(?:v=|youtu\.be\/|\/live\/)([a-zA-Z0-9_-]{11})/);
-  const videoId = match ? match[1] : null;
-  if (!videoId) {
-    alert("Please enter a valid YouTube Live URL");
-    return;
-  }
-
-  const baseApi = "https://yt-backend-m177.onrender.com/"; // replace with your Render backend URL
-  const streamUrl = `${baseApi}stream?video_id=${videoId}`;
-
-  document.getElementById("loading").style.display = 'block';
-  document.getElementById("playerBox").style.display = 'none';
-
-  fetch(streamUrl)
-    .then(res => res.text())
-    .then(m3u8 => {
-      const videoContainer = document.getElementById("videoContainer");
-      videoContainer.innerHTML = "";
-
-      const video = document.createElement("video");
-      video.setAttribute("controls", true);
-      video.setAttribute("autoplay", true);
-
-      videoContainer.appendChild(video);
-
-      if (Hls.isSupported()) {
-        const hls = new Hls();
-        hls.loadSource(m3u8);
-        hls.attachMedia(video);
-      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = m3u8;
-      } else {
-        alert("HLS is not supported by your browser.");
+  <script>
+    function playVideo() {
+      const url = document.getElementById("link").value.trim();
+      const match = url.match(/(?:v=|youtu\.be\/|\/live\/)([a-zA-Z0-9_-]{11})/);
+      const videoId = match ? match[1] : null;
+      if (!videoId) {
+        alert("Please enter a valid YouTube video URL");
         return;
       }
 
-      document.getElementById("streamLinkText").value = m3u8;
-      document.getElementById("loading").style.display = 'none';
-      document.getElementById("playerBox").style.display = 'block';
-      document.getElementById("playerBox").scrollIntoView({ behavior: 'smooth' });
-    })
-    .catch(err => {
-      alert("Failed to fetch stream.");
-      document.getElementById("loading").style.display = 'none';
-    });
-}
+      document.getElementById("loading").style.display = 'block';
 
-function copyStream() {
-  navigator.clipboard.writeText(document.getElementById("streamLinkText").value);
-  alert("Stream link copied!");
-}
+      const baseApi = "https://yt-backend-m177.onrender.com";
+      const streamUrl = `${baseApi}/stream?video_id=${videoId}`;
+      const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
 
-function addExample() {
-  document.getElementById("link").value = "https://www.youtube.com/live/dXIyMS61B68?si=GvJreFsSCk0WvC6X";
-}
-</script>
+      setTimeout(() => {
+        document.getElementById("ytFrame").src = embedUrl;
+        document.getElementById("playerLinkText").value = embedUrl;
+        document.getElementById("embedLinkText").value = `<iframe src="${embedUrl}" width="560" height="315" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>`;
+        document.getElementById("streamLinkText").value = streamUrl;
+
+        document.getElementById("playerBox").style.display = 'block';
+        document.getElementById("loading").style.display = 'none';
+        document.getElementById("playerBox").scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+
+    function addExample() {
+      document.getElementById("link").value = "https://www.youtube.com/live/21X5lGlDOfg";
+    }
+
+    function copyToClipboard(id) {
+      const text = document.getElementById(id).value;
+      navigator.clipboard.writeText(text);
+      alert("Copied!");
+    }
+  </script>
 </body>
 </html>
